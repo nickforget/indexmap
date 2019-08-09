@@ -9,7 +9,7 @@ type NormalIndex struct {
 	IndexName string
 	GetField GetIndexField
 	CompareField CompareIndexField
-	IndexData map[interface{}]([]*Record)
+	IndexData map[uint64]([]*Record)
 }
 
 func NewNormalIndex(indextype int32, indexname string, getfield GetIndexField, comparefield CompareIndexField) *NormalIndex{
@@ -18,7 +18,7 @@ func NewNormalIndex(indextype int32, indexname string, getfield GetIndexField, c
 		IndexName : indexname,
 		GetField : getfield,
 		CompareField : comparefield,
-		IndexData : make(map[interface{}]([]*Record), 0),
+		IndexData : make(map[uint64]([]*Record), 0),
 	}
 }
 

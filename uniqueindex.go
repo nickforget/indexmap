@@ -7,7 +7,7 @@ type UniqueIndex struct {
 	IndexName string
 	GetField GetIndexField
 	CompareField CompareIndexField
-	IndexData map[interface{}]([]*Record)
+	IndexData map[uint64]([]*Record)
 }
 
 func NewUniqueIndex(indextype int32, indexname string, getfield GetIndexField, comparefield CompareIndexField) *UniqueIndex{
@@ -16,7 +16,7 @@ func NewUniqueIndex(indextype int32, indexname string, getfield GetIndexField, c
 		IndexName : indexname,
 		GetField : getfield,
 		CompareField : comparefield,
-		IndexData : make(map[interface{}]([]*Record), 0),
+		IndexData : make(map[uint64]([]*Record), 0),
 	}
 }
 
