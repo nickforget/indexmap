@@ -10,11 +10,11 @@ const (
 
 type IndexManage struct {
 	mutex sync.RWMutex
-	Mainindexname string
+	MainIndexName string
 	Indexs map[string]Index
 }
 
-func (this *IndexManage) AddData(name string, data interface{}) bool{
+func (this *IndexManage) InsertData(name string, data interface{}) bool{
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -24,13 +24,13 @@ func (this *IndexManage) AddData(name string, data interface{}) bool{
 		return false
 	}
 
-	v, ok := this.Indexs[this.Mainindexname]
+	v, ok := this.Indexs[this.MainIndexName]
 
 	if !ok {
 		return false
 	}
 
-	rev := v.Get(v.GetIndexField()(data)...)
+	rev := v.Query(v.PFuncGetField()(data)...)
 
 	if nil != rev {
 		return false
@@ -42,7 +42,7 @@ func (this *IndexManage) AddData(name string, data interface{}) bool{
 	}
 
 	for _, v := range this.Indexs {
-		v.Add(datatmp)
+		v.Insert(datatmp)
 	}
 
 	return true
@@ -58,16 +58,16 @@ func (this *IndexManage) DeleteData(name string, key ...interface{}){
 		return
 	}
 
-	revdata := this.Indexs[name].Get(key...)
+	data := this.Indexs[name].Query(key...)
 
-	if nil == revdata {
+	if nil == data {
 		return
 	}
 
 	this.Indexs[name].Delete(key...)
 }
 
-func (this *IndexManage) GetData(name string, hashfield ...interface{})([]interface{}){
+func (this *IndexManage) QueryData(name string, field ...interface{})([]interface{}){
 	this.mutex.RLock()
 	defer this.mutex.RUnlock()
 
@@ -77,16 +77,12 @@ func (this *IndexManage) GetData(name string, hashfield ...interface{})([]interf
 		return nil
 	}
 
-	revdata := this.Indexs[name].Get(hashfield...)
+	data := this.Indexs[name].Query(field...)
 
-	if nil == revdata {
-		return nil
-	}
-
-	return revdata
+	return data
 }
 
-func (this *IndexManage) UpdateData(name string, data interface{})bool{
+func (this *IndexManage) ModifyData(name string, data interface{})bool{
 	this.mutex.Lock()
 	defer this.mutex.Unlock()
 
@@ -98,26 +94,26 @@ func (this *IndexManage) UpdateData(name string, data interface{})bool{
 	}
 
 	// 判断索引是不是唯一键或者主键
-	if UniqueIndexType != index.GetIndexType() && MainIndexType != index.GetIndexType() {
+	if UniqueIndexType != index.IndexType() && MainIndexType != index.IndexType() {
 		return false
 	}
 
 	// 查找是否存在主键
-	v, ok := this.Indexs[this.Mainindexname]
+	v, ok := this.Indexs[this.MainIndexName]
 
 	if !ok {
 		return false
 	}
 
 	// 查找是否有数据
-	rev := v.Get(v.GetIndexField()(data)...)
-	if nil == rev {
+	revdata := v.Query(v.PFuncGetField()(data)...)
+	if nil == revdata {
 		return false
 	}
 
 	// 通过主索引删除数据
-	for _, tmp := range rev {
-		v.Delete(v.GetIndexField()(tmp)...)
+	for _, tmp := range revdata {
+		v.Delete(v.PFuncGetField()(tmp)...)
 	}
 
 	for _, v := range this.Indexs {
@@ -126,7 +122,7 @@ func (this *IndexManage) UpdateData(name string, data interface{})bool{
 			Data : data,
 		}
 
-		v.Add(datatmp)
+		v.Insert(datatmp)
 	}
 
 	return true

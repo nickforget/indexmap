@@ -5,64 +5,52 @@ import (
 )
 
 type NormalIndex struct {
-	IndexType int32
-	IndexName string
-	GetField GetIndexField
-	CompareField CompareIndexField
-	IndexData map[uint64]([]*Record)
+	indexType int32
+	indexName string
+	pFuncGetField PFuncGetField
+	pFuncCmpField PFuncCmpField
+	indexData map[uint64]([]*Record)
 }
 
-func NewNormalIndex(indextype int32, indexname string, getfield GetIndexField, comparefield CompareIndexField) *NormalIndex{
+func NewNormalIndex(indextype int32, indexname string, pfuncgetfield PFuncGetField, pfunccmpfield  PFuncCmpField) *NormalIndex{
 	return &NormalIndex{
-		IndexType : indextype,
-		IndexName : indexname,
-		GetField : getfield,
-		CompareField : comparefield,
-		IndexData : make(map[uint64]([]*Record), 0),
+		indexType : indextype,
+		indexName : indexname,
+		pFuncGetField : pfuncgetfield,
+		pFuncCmpField : pfunccmpfield,
+		indexData : make(map[uint64]([]*Record), 0),
 	}
 }
 
-func (index *NormalIndex) GetIndexType() int32{
-	return index.IndexType
-}
-
-func (index *NormalIndex) GetIndexName() string{
-	return index.IndexName
-}
-
-func (index *NormalIndex) GetIndexField()GetIndexField{
-	return index.GetField
-}
-
-func (index *NormalIndex) Add(data *Record){
+func (index *NormalIndex) Insert(data *Record){
 	// 获取索引字段
-	hashfield := index.GetField(data.Data)
+	hashfield := index.pFuncGetField(data.Data)
 
 	// 计算索引字段的HASH值
 	hash, _ := hashstructure.Hash(hashfield, nil)
 
 	// 添加数据
-	index.IndexData[hash] = append(index.IndexData[hash], data)
+	index.indexData[hash] = append(index.indexData[hash], data)
 }
 
-func (index *NormalIndex) Delete(hashfield ...interface{}){
+func (index *NormalIndex) Delete(field ...interface{}){
 	// 计算索引字段的HASH值
-	hash, _ := hashstructure.Hash(hashfield, nil)
+	hash, _ := hashstructure.Hash(field, nil)
 
 	// 查找对应的数据
-	for i, v := range index.IndexData[hash] {
-		if index.CompareField(v.Data, hashfield){
-			index.IndexData[hash][i].IsValid = false
+	for i, v := range index.indexData[hash] {
+		if index.pFuncCmpField(v.Data, field){
+			index.indexData[hash][i].IsValid = false
 		}
 	}
 }
 
-func (index *NormalIndex) Get(hashfield ...interface{})(value []interface{}){
+func (index *NormalIndex) Query(field ...interface{})(data []interface{}){
 	// 计算HASH值
-	hash, _ := hashstructure.Hash(hashfield, nil)
+	hash, _ := hashstructure.Hash(field, nil)
 
 	// 查找数据
-	_, ok:= index.IndexData[hash]
+	_, ok:= index.indexData[hash]
 
 	// 没找到返回nil
 	if !ok {
@@ -70,16 +58,29 @@ func (index *NormalIndex) Get(hashfield ...interface{})(value []interface{}){
 	}
 
 	// 比较内容
-	for _, v := range index.IndexData[hash] {
-		if v.IsValid && index.CompareField(v.Data, hashfield){
-			value = append(value, v.Data)
+	for _, v := range index.indexData[hash] {
+		if v.IsValid && index.pFuncCmpField(v.Data, field){
+			data = append(data, v.Data)
 		}
 	}
 
-	return value
+	return data
 }
 
-func (index *NormalIndex) Update(data *Record, hashfield ...interface{}){
-	index.Delete(hashfield...)
-	index.Add(data)
+func (index *NormalIndex) Modify(data *Record, field ...interface{}){
+	index.Delete(field...)
+	index.Insert(data)
 }
+
+func (index *NormalIndex) IndexType() int32{
+	return index.indexType
+}
+
+func (index *NormalIndex) IndexName() string{
+	return index.indexName
+}
+
+func (index *NormalIndex) PFuncGetField()PFuncGetField{
+	return index.pFuncGetField
+}
+

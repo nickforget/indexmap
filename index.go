@@ -1,19 +1,23 @@
 package indexmap
 
+// 数据结构
 type Record struct {
 	IsValid bool
 	Data interface{}
 }
 
-type GetIndexField = func(interface{})([]interface{})
-type CompareIndexField = func(interface{}, []interface{}) bool
+// 获取字段函数
+type PFuncGetField = func(interface{})([]interface{})
+
+// 比较字段函数
+type PFuncCmpField = func(interface{}, []interface{}) bool
 
 type Index interface {
- 	Add(data *Record)
-	Delete(hashfield ...interface{})
-	Get(hashfield ...interface{})(value []interface{})
-	Update(data *Record, hashfield ...interface{})
-	GetIndexType() int32
- 	GetIndexName() string
-	GetIndexField()GetIndexField
+ 	Insert(data *Record)
+	Delete(field ...interface{})
+	Query(field ...interface{})(data []interface{})
+	Modify(data *Record, field ...interface{})
+	IndexType() int32
+ 	IndexName() string
+	PFuncGetField()PFuncGetField
 }

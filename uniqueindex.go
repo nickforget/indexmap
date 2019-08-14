@@ -3,64 +3,52 @@ package indexmap
 import "github.com/mitchellh/hashstructure"
 
 type UniqueIndex struct {
-	IndexType int32
-	IndexName string
-	GetField GetIndexField
-	CompareField CompareIndexField
-	IndexData map[uint64]([]*Record)
+	indexType int32
+	indexName string
+	pFuncGetField PFuncGetField
+	pFuncCmpField PFuncCmpField
+	indexData map[uint64]([]*Record)
 }
 
-func NewUniqueIndex(indextype int32, indexname string, getfield GetIndexField, comparefield CompareIndexField) *UniqueIndex{
+func NewUniqueIndex(indextype int32, indexname string, pfuncgetfield PFuncGetField, pfunccmpfield  PFuncCmpField) *UniqueIndex{
 	return &UniqueIndex{
-		IndexType : indextype,
-		IndexName : indexname,
-		GetField : getfield,
-		CompareField : comparefield,
-		IndexData : make(map[uint64]([]*Record), 0),
+		indexType : indextype,
+		indexName : indexname,
+		pFuncGetField : pfuncgetfield,
+		pFuncCmpField : pfunccmpfield,
+		indexData : make(map[uint64]([]*Record), 0),
 	}
 }
 
-func (index *UniqueIndex) GetIndexType() int32{
-	return index.IndexType
-}
-
-func (index *UniqueIndex) GetIndexName() string{
-	return index.IndexName
-}
-
-func (index *UniqueIndex) GetIndexField()GetIndexField{
-	return index.GetField
-}
-
-func (index *UniqueIndex) Add(data *Record){
+func (index *UniqueIndex) Insert(data *Record){
 	// 获取索引字段
-	hashfield := index.GetField(data.Data)
+	hashfield := index.pFuncGetField(data.Data)
 
 	// 计算索引字段的HASH值
 	hash, _ := hashstructure.Hash(hashfield, nil)
 
 	// 添加数据
-	index.IndexData[hash] = append(index.IndexData[hash], data)
+	index.indexData[hash] = append(index.indexData[hash], data)
 }
 
-func (index *UniqueIndex) Delete(hashfield ...interface{}){
+func (index *UniqueIndex) Delete(field ...interface{}){
 	// 计算索引字段的HASH值
-	hash, _ := hashstructure.Hash(hashfield, nil)
+	hash, _ := hashstructure.Hash(field, nil)
 
 	// 查找对应的数据
-	for i, v := range index.IndexData[hash] {
-		if index.CompareField(v.Data, hashfield){
-			index.IndexData[hash][i].IsValid = false
+	for i, v := range index.indexData[hash] {
+		if index.pFuncCmpField(v.Data, field){
+			index.indexData[hash][i].IsValid = false
 		}
 	}
 }
 
-func (index *UniqueIndex) Get(hashfield ...interface{})(value []interface{}){
+func (index *UniqueIndex) Query(field ...interface{})(data []interface{}){
 	// 计算HASH值
-	hash, _ := hashstructure.Hash(hashfield, nil)
+	hash, _ := hashstructure.Hash(field, nil)
 
 	// 查找数据
-	_, ok:= index.IndexData[hash]
+	_, ok:= index.indexData[hash]
 
 	// 没找到返回nil
 	if !ok {
@@ -68,8 +56,8 @@ func (index *UniqueIndex) Get(hashfield ...interface{})(value []interface{}){
 	}
 
 	// 比较内容
-	for _, v := range index.IndexData[hash] {
-		if v.IsValid && index.CompareField(v.Data, hashfield){
+	for _, v := range index.indexData[hash] {
+		if v.IsValid && index.pFuncCmpField(v.Data, field){
 			return []interface{}{v.Data}
 		}
 	}
@@ -77,7 +65,19 @@ func (index *UniqueIndex) Get(hashfield ...interface{})(value []interface{}){
 	return nil
 }
 
-func (index *UniqueIndex) Update(data *Record, hashfield ...interface{}){
-	index.Delete(hashfield...)
-	index.Add(data)
+func (index *UniqueIndex) Modify(data *Record, field ...interface{}){
+	index.Delete(field...)
+	index.Insert(data)
+}
+
+func (index *UniqueIndex) IndexType() int32{
+	return index.indexType
+}
+
+func (index *UniqueIndex) IndexName() string{
+	return index.indexName
+}
+
+func (index *UniqueIndex) PFuncGetField()PFuncGetField{
+	return index.pFuncGetField
 }

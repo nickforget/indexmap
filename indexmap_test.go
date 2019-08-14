@@ -20,8 +20,9 @@ func NewStudent(name string, age int32, no int32)(*Student){
 }
 
 func TestIndexMap(t *testing.T) {
+	// 定义索引
 	indexmanage := &IndexManage{
-		Mainindexname : "IndexNameTwo",
+		MainIndexName : "IndexNameTwo",
 		Indexs : map[string]Index{
 			"IndexNameOne" : NewUniqueIndex(
 				UniqueIndexType,
@@ -86,92 +87,95 @@ func TestIndexMap(t *testing.T) {
 		},
 	}
 
+	// 定义数据
 	stuOne := NewStudent("Zouqiang1", 30, 1)
 	stuTwo := NewStudent("Zouqiang2", 30, 2)
 	stuThree := NewStudent("Zouqiang3", 30, 3)
 
-	indexmanage.AddData("IndexNameOne", *stuOne)
-	indexmanage.AddData("IndexNameTwo", *stuTwo)
-	indexmanage.AddData("IndexNameThree", *stuThree)
+	// 插入数据
+	indexmanage.InsertData("IndexNameOne", *stuOne)
+	indexmanage.InsertData("IndexNameTwo", *stuTwo)
+	indexmanage.InsertData("IndexNameThree", *stuThree)
 
 	fmt.Println("----------------------------------------------------")
+
 	// 索引1打印数据
-	zouqiang1 := indexmanage.GetData("IndexNameOne","Zouqiang1", int32(1))
-	zouqiang2 := indexmanage.GetData("IndexNameOne","Zouqiang2", int32(2))
-	zouqiang3 := indexmanage.GetData("IndexNameOne","Zouqiang3", int32(3))
+	zouqiang1 := indexmanage.QueryData("IndexNameOne","Zouqiang1", int32(1))
+	zouqiang2 := indexmanage.QueryData("IndexNameOne","Zouqiang2", int32(2))
+	zouqiang3 := indexmanage.QueryData("IndexNameOne","Zouqiang3", int32(3))
+
 	fmt.Println("IndexOne Zouqiang1 : ", zouqiang1)
 	fmt.Println("IndexOne Zouqiang2 : ", zouqiang2)
 	fmt.Println("IndexOne Zouqiang3 : ", zouqiang3)
 
 	// 索引2打印数据
-	zouqiang1 = indexmanage.GetData("IndexNameTwo", int32(1))
-	zouqiang2 = indexmanage.GetData("IndexNameTwo", int32(2))
-	zouqiang3 = indexmanage.GetData("IndexNameTwo", int32(3))
+	zouqiang1 = indexmanage.QueryData("IndexNameTwo", int32(1))
+	zouqiang2 = indexmanage.QueryData("IndexNameTwo", int32(2))
+	zouqiang3 = indexmanage.QueryData("IndexNameTwo", int32(3))
+
 	fmt.Println("IndexTwo Zouqiang1 : ", zouqiang1)
 	fmt.Println("IndexTwo Zouqiang2 : ", zouqiang2)
 	fmt.Println("IndexTwo Zouqiang3 : ", zouqiang3)
 
 	// 索引3打印数据
-	zouqiang := indexmanage.GetData("IndexNameThree", int32(30))
+	zouqiang := indexmanage.QueryData("IndexNameThree", int32(30))
 	fmt.Println("IndexThree Zouqiang : ", zouqiang)
 
 	fmt.Println("----------------------------------------------------")
-
 	fmt.Println("----------------------------------------------------")
+
 	// 删除数据
 	indexmanage.DeleteData("IndexNameOne", "Zouqiang1", int32(1))
 
 	// 删除Zouqiang1之后
 	// 索引1打印数据
-	zouqiang1 = indexmanage.GetData("IndexNameOne","Zouqiang1", int32(1))
-	zouqiang2 = indexmanage.GetData("IndexNameOne","Zouqiang2", int32(2))
-	zouqiang3 = indexmanage.GetData("IndexNameOne","Zouqiang3", int32(3))
+	zouqiang1 = indexmanage.QueryData("IndexNameOne","Zouqiang1", int32(1))
+	zouqiang2 = indexmanage.QueryData("IndexNameOne","Zouqiang2", int32(2))
+	zouqiang3 = indexmanage.QueryData("IndexNameOne","Zouqiang3", int32(3))
 
 	fmt.Println("IndexOne Zouqiang1 : ", zouqiang1)
 	fmt.Println("IndexOne Zouqiang2 : ", zouqiang2)
 	fmt.Println("IndexOne Zouqiang3 : ", zouqiang3)
 
 	// 索引2打印数据
-	zouqiang1 = indexmanage.GetData("IndexNameTwo", int32(1))
-	zouqiang2 = indexmanage.GetData("IndexNameTwo", int32(2))
-	zouqiang3 = indexmanage.GetData("IndexNameTwo", int32(3))
+	zouqiang1 = indexmanage.QueryData("IndexNameTwo", int32(1))
+	zouqiang2 = indexmanage.QueryData("IndexNameTwo", int32(2))
+	zouqiang3 = indexmanage.QueryData("IndexNameTwo", int32(3))
 
 	fmt.Println("IndexTwo Zouqiang1 : ", zouqiang1)
 	fmt.Println("IndexTwo Zouqiang2 : ", zouqiang2)
 	fmt.Println("IndexTwo Zouqiang3 : ", zouqiang3)
 
 	// 索引3打印数据
-	zouqiang = indexmanage.GetData("IndexNameThree", int32(30))
+	zouqiang = indexmanage.QueryData("IndexNameThree", int32(30))
 	fmt.Println("IndexThree Zouqiang : ", zouqiang)
 
 	fmt.Println("----------------------------------------------------")
-
-
 	fmt.Println("----------------------------------------------------")
 
 	// 修改数据
 	stu := NewStudent("Zouqiang2", 50, 2)
+	indexmanage.ModifyData("IndexNameOne", *stu)
 
-	indexmanage.UpdateData("IndexNameOne", *stu)
-	zouqiang1 = indexmanage.GetData("IndexNameOne","Zouqiang1", int32(1))
-	zouqiang2 = indexmanage.GetData("IndexNameOne","Zouqiang2", int32(2))
-	zouqiang3 = indexmanage.GetData("IndexNameOne","Zouqiang3", int32(3))
+	zouqiang1 = indexmanage.QueryData("IndexNameOne","Zouqiang1", int32(1))
+	zouqiang2 = indexmanage.QueryData("IndexNameOne","Zouqiang2", int32(2))
+	zouqiang3 = indexmanage.QueryData("IndexNameOne","Zouqiang3", int32(3))
 
 	fmt.Println("IndexOne Zouqiang1 : ", zouqiang1)
 	fmt.Println("IndexOne Zouqiang2 : ", zouqiang2)
 	fmt.Println("IndexOne Zouqiang3 : ", zouqiang3)
 
 	// 索引2打印数据
-	zouqiang1 = indexmanage.GetData("IndexNameTwo", int32(1))
-	zouqiang2 = indexmanage.GetData("IndexNameTwo", int32(2))
-	zouqiang3 = indexmanage.GetData("IndexNameTwo", int32(3))
+	zouqiang1 = indexmanage.QueryData("IndexNameTwo", int32(1))
+	zouqiang2 = indexmanage.QueryData("IndexNameTwo", int32(2))
+	zouqiang3 = indexmanage.QueryData("IndexNameTwo", int32(3))
 
 	fmt.Println("IndexTwo Zouqiang1 : ", zouqiang1)
 	fmt.Println("IndexTwo Zouqiang2 : ", zouqiang2)
 	fmt.Println("IndexTwo Zouqiang3 : ", zouqiang3)
 
 	// 索引3打印数据
-	zouqiang = indexmanage.GetData("IndexNameThree", int32(30))
+	zouqiang = indexmanage.QueryData("IndexNameThree", int32(30))
 	fmt.Println("IndexThree Zouqiang : ", zouqiang)
 	fmt.Println("----------------------------------------------------")
 }
